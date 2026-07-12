@@ -133,6 +133,21 @@ if not os.environ.get("GEMINI_API_KEY"):
     st.error("GEMINI_API_KEY 환경변수가 설정되지 않았습니다.")
     st.stop()
 
+# --- 비밀번호 잠금 ---
+APP_PASSWORD = st.secrets.get("APP_PASSWORD") or os.environ.get("APP_PASSWORD")
+
+if APP_PASSWORD:
+    if not st.session_state.get("authed"):
+        st.info("입주민 전용입니다. 관리사무소에서 안내받은 비밀번호를 입력해 주세요.")
+        pw = st.text_input("비밀번호", type="password")
+        if pw:
+            if pw == APP_PASSWORD:
+                st.session_state.authed = True
+                st.rerun()
+            else:
+                st.error("비밀번호가 올바르지 않습니다.")
+        st.stop()
+
 full_text, index = load()
 system = build_system_prompt(full_text)
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
